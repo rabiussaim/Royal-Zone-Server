@@ -5,6 +5,11 @@ const connectDB = async () => {
     const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/royalzone';
     const conn = await mongoose.connect(mongoUri);
     console.log(`MongoDB Connected: ${conn.connection.host}`);
+
+    // TEMPORARY DIAGNOSTIC LOGS - Remove after debugging
+    console.log(`LIVE MONGO DATABASE: ${conn.connection.name}`);
+    console.log(`LIVE MONGO HOST: ${conn.connection.host}`);
+    // END TEMPORARY DIAGNOSTIC LOGS
   } catch (error) {
     console.error(`Error connecting to MongoDB: ${error.message}`);
     process.exit(1);
