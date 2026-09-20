@@ -1,14 +1,21 @@
+const dns = require('dns');
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder('ipv4first');
+}
+try {
+  dns.setServers(['8.8.8.8', '1.1.1.1']);
+} catch (e) {}
+
 const path = require('path');
 const dotenv = require('dotenv');
 
-// Load .env BEFORE importing models or connecting to MongoDB
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
-if (!process.env.MONGO_URI) {
-  dotenv.config();
-}
+dotenv.config({
+  path: path.resolve(__dirname, '../.env'),
+  override: true
+});
 
 if (!process.env.MONGO_URI) {
-  console.error('MONGO_URI is not defined in server/.env');
+  console.error('MONGO_URI is missing from server/.env');
   process.exit(1);
 }
 
@@ -84,8 +91,8 @@ const seedData = async () => {
   try {
     const conn = await mongoose.connect(process.env.MONGO_URI);
     console.log('MongoDB Connected for Seeding');
-    console.log(`Database: ${conn.connection.name}`);
-    console.log(`Host: ${conn.connection.host}`);
+    console.log('Database:', mongoose.connection.name);
+    console.log('Host:', mongoose.connection.host);
 
     await Category.deleteMany();
     await Product.deleteMany();
@@ -104,9 +111,9 @@ const seedData = async () => {
     const productCount = await Product.countDocuments();
 
     console.log('Data Imported Successfully');
-    console.log(`Database: ${conn.connection.name}`);
-    console.log(`Categories: ${categoryCount}`);
-    console.log(`Products: ${productCount}`);
+    console.log('Database:', mongoose.connection.name);
+    console.log('Categories:', categoryCount);
+    console.log('Products:', productCount);
 
     await mongoose.disconnect();
     process.exit(0);
