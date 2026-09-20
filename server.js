@@ -35,10 +35,22 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Security middleware
 app.use(helmet());
+const allowedOrigins = process.env.CLIENT_URL
+  ? process.env.CLIENT_URL.split(',').map(url => url.trim())
+  : true;
+
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production'
-    ? process.env.CLIENT_URL
-    : true, // allow all in dev
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins === true) return callback(null, true);
+    if (Array.isArray(allowedOrigins) && allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    // Allow Vercel preview & production deployments
+    if (origin.endsWith('.vercel.app')) {
+      return callback(null, true);
+    }
+    return callback(null, true);
+  },
   credentials: true,
 }));
 
