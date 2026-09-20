@@ -12,6 +12,12 @@ const router = express.Router();
 
 router.post('/register', register);
 router.post('/login', login);
+router.get('/login', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Auth login endpoint is active. Use HTTP POST with email and password to log in.'
+  });
+});
 router.get('/me', protect, getMe);
 router.put('/profile', protect, updateProfile);
 router.put('/change-password', protect, changePassword);
