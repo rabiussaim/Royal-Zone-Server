@@ -65,25 +65,26 @@ app.use('/api/orders', orderRoutes);
 // Error handler middleware
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 5000;
+// Process-level diagnostic logging
+process.on('uncaughtException', (err) => {
+  console.error('[DIAGNOSTIC] UNCAUGHT EXCEPTION:', err.stack || err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[DIAGNOSTIC] UNHANDLED REJECTION:', reason.stack || reason);
+});
+
+const PORT = process.env.PORT || 3000;
 
 const server = app.listen(PORT, () => {
   console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
 });
 
 server.on('error', (err) => {
+  console.error('[DIAGNOSTIC] Server error:', err.stack || err.message);
   if (err.code === 'EADDRINUSE') {
-    console.error(`Port ${PORT} is already in use. Terminating existing process or select another port.`);
+    console.error(`Port ${PORT} is already in use.`);
     process.exit(1);
-  } else {
-    console.error(`Server error: ${err.message}`);
   }
-});
-
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (err, promise) => {
-  console.error(`Error: ${err.message}`);
-  // Close server & exit process
-  server.close(() => process.exit(1));
 });
 

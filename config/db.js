@@ -12,11 +12,11 @@ const connectDB = async () => {
 };
 // mongodb://localhost:27017/
 mongoose.connection.on('disconnected', () => {
-  console.log('MongoDB disconnected');
+  console.error('[DIAGNOSTIC] MongoDB connection disconnected');
 });
-// mongodb://localhost:27017/
+
 mongoose.connection.on('error', (err) => {
-  console.error('MongoDB connection error:', err);
+  console.error('[DIAGNOSTIC] MongoDB connection error:', err.stack || err);
 });
 
 module.exports = connectDB;
