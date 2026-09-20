@@ -12,6 +12,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const connectDB = require('./config/db');
+const mongoose = require('mongoose');
 const errorHandler = require('./middleware/errorMiddleware');
 
 // Route files
@@ -54,6 +55,27 @@ app.use('/api', (req, res, next) => {
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
+
+// TEMPORARY DIAGNOSTIC ENDPOINT
+app.get('/api/diagnostic/database', async (req, res) => {
+  try {
+    const Product = require('./models/Product');
+
+    const count = await Product.countDocuments();
+
+    res.json({
+      success: true,
+      database: mongoose.connection.name,
+      host: mongoose.connection.host,
+      productCount: count
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
 
 // Mount routers
 app.use('/api/auth', authRoutes);
