@@ -38,21 +38,35 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Security middleware
 app.use(helmet());
-const allowedOrigins = process.env.CLIENT_URL
+
+// Hardcoded allowed origins — always permitted regardless of CLIENT_URL env var
+const HARDCODED_ORIGINS = [
+  'https://www.royalzonepk.com',
+  'https://royalzonepk.com',
+  'https://royal-zone.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:3000',
+];
+
+const envOrigins = process.env.CLIENT_URL
   ? process.env.CLIENT_URL.split(',').map(url => url.trim())
-  : true;
+  : [];
+
+const allowedOrigins = [...new Set([...HARDCODED_ORIGINS, ...envOrigins])];
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins === true) return callback(null, true);
-    if (Array.isArray(allowedOrigins) && allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    // Allow Vercel preview & production deployments
-    if (origin.endsWith('.vercel.app')) {
-      return callback(null, true);
-    }
-    return callback(null, true);
+    // Allow requests with no origin (mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+    // Allow any Vercel preview deployment
+    if (origin.endsWith('.vercel.app')) return callback(null, true);
+    // Allow any royalzonepk.com subdomain
+    if (origin.endsWith('royalzonepk.com')) return callback(null, true);
+    // Check against allowed list
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    // Log blocked origins for debugging
+    console.warn(`[CORS] Blocked origin: ${origin}`);
+    return callback(new Error(`CORS: origin ${origin} not allowed`), false);
   },
   credentials: true,
 }));
